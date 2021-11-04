@@ -1,0 +1,4 @@
+Starting GLITZ
+NEW GAME
+Glitz started on 8105
+new player @ socket id: N4lrAAvKHoDaAhKRAAAA

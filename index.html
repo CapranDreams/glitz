@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Glitz</title>
+	<link rel="icon" href="http://www.onyxibex.com/favicon.ico" type="image/x-icon"/>
+    <link type="text/css" rel="stylesheet" href="style.css">
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>    
+</head>
+<body>
+	<!-- background -->
+	<div id="grad1" class="grad"></div>
+	<div id="grad2" class="grad"></div>
+	<div id="grad3" class="grad"></div>
+	<div id="grad1b" class="grad"></div>
+	<div id="grad2b" class="grad"></div>
+	<div id="grad3b" class="grad"></div>
+	
+	<!-- menu buttons -->
+	<form id="new_game_code">
+		<h1 class="game_code_title">Your Name:</h1>
+		<input class="input_field" type="text" id="form_name" name="player_name" placeholder="player name" required><br><br>
+				
+		<button id="submitButton" onclick="newGame()" type="button">PLAY</button>
+		<button id="cancelButton" onclick="closeMenus()" type="button">X</button>
+	</form>
+	<form id="join_game_code">
+		<h1 class="game_code_title">Your Name:</h1>
+		<input class="input_field" type="text" id="form_name2" name="player_name" placeholder="player name" required><br><br>
+		
+		
+		<button id="submitButton" onclick="joinGame()" type="button">JOIN</button>
+		<button id="cancelButton" onclick="closeMenus()" type="button">X</button>
+	</form>
+	<div id="newRulesScreen">
+		<h1>GAME RULES</h1>
+		<p>Collect gem mines and gem tokens to be able to buy more mines. Higher value gem mines can give more victory points. The first player to reach 15 VP wins, although all other players will have 1 more turn to try and score higher than 15.</p>
+		<p>On a players turn, they can either buy mine, or collect gems. If collecting gems, you can either draw 3 different gems, or 2 of the same gem. Be wary though, you can only ever have at most 10 gems. If buying a mine, the gemstone cost to buy the mine is lowered by however many mines of each gem cost that you already have.</p>
+		<p>For example, lets say you already have 2 sapphire mines and 1 ruby mine and you have 2 sapphire gems and 2 ruby gems. Now you want to buy a mine that costs 3 sapphires and 3 ruby gems. You have 2 sapphire mines, so the effective sapphire cost is only 3-2=1, so you only spend 1 sapphire gem. For the rubies, you would need to use both your ruby gems because you only have 1 ruby mine.</p>
+		</br></br></br></br>
+		<button id="cancelButton" onclick="closeMenus()" type="button">X</button>
+	</div>
+	<div id='gameover'>Game Over</div>
+	<div id='turnindicator'><p>Your Turn</p><p>actions: 3/3</p></div>
+	
+	<!-- bottom panel -->
+	<div id="gem_wrapper1" class="">		
+		<img src="img/newgame.png" id="newgame" onclick="onclick_newgame()" />
+		<img src="img/joingame.png" id="joingame" onclick="onclick_joingame()" />
+		<img src="img/rules.png" id="rules" onclick="onclick_rules()" />
+		
+		<!-- gem icon -->
+		<mine id="p1mine1" class="mine_chocolate"></mine>
+		<mine id="p1mine2" class="mine_ruby"></mine>
+		<mine id="p1mine3" class="mine_emerald"></mine>
+		<mine id="p1mine4" class="mine_sapphire"></mine>
+		<mine id="p1mine5" class="mine_diamond"></mine>
+		
+		<!-- gem quantity -->
+		<qty id="token_chocolate">0</qty>
+		<qty id="token_ruby">0</qty>
+		<qty id="token_emerald">0</qty>
+		<qty id="token_sapphire">0</qty>
+		<qty id="token_diamond">0</qty>
+		
+		<!-- mine icon -->
+		<qty id="mines_chocolate">0</qty>
+		<qty id="mines_ruby">0</qty>
+		<qty id="mines_emerald">0</qty>
+		<qty id="mines_sapphire">0</qty>
+		<qty id="mines_diamond">0</qty>
+		
+		<!-- mine quantity -->
+		<gem id="p1gem1" class="chocolate"></gem>
+		<gem id="p1gem2" class="ruby"></gem>
+		<gem id="p1gem3" class="emerald"></gem>
+		<gem id="p1gem4" class="sapphire"></gem>
+		<gem id="p1gem5" class="diamond"></gem>
+		
+		
+		<div>	<!-- Scores -->
+		
+			<!-- names -->
+			<name id="name0" class="turn">Player 1</name>
+			<name id="name1" class="">Player 2</name>
+			<name id="name2" class="">Player 3</name>
+			<name id="name3" class="">Player 4</name>
+			
+			<!-- gem labels -->
+			<img src="img/gem_icon_chocolate.png" class="gem_icon icon_chocolate" onclick="" />
+			<img src="img/gem_icon_ruby.png" class="gem_icon icon_ruby" onclick="" />
+			<img src="img/gem_icon_emerald.png" class="gem_icon icon_emerald" onclick="" />
+			<img src="img/gem_icon_sapphire.png" class="gem_icon icon_sapphire" onclick="" />
+			<img src="img/gem_icon_diamond.png" class="gem_icon icon_diamond" onclick="" />
+			
+			<!-- mine labels -->
+			<img src="img/mine_chocolate.png" class="gem_icon icon_chocolate_mine" onclick="" />
+			<img src="img/mine_ruby.png" class="gem_icon icon_ruby_mine" onclick="" />
+			<img src="img/mine_emerald.png" class="gem_icon icon_emerald_mine" onclick="" />
+			<img src="img/mine_sapphire.png" class="gem_icon icon_sapphire_mine" onclick="" />
+			<img src="img/mine_diamond.png" class="gem_icon icon_diamond_mine" onclick="" />
+			
+			<!-- VP label -->
+			<img src="img/VP.png" class="gem_icon icon_VP" onclick="" />
+			
+			<score id="score_p1m1">0</score>
+			<score id="score_p1g1">0</score>
+			<score id="score_p1m2">0</score>
+			<score id="score_p1g2">0</score>
+			<score id="score_p1m3">0</score>
+			<score id="score_p1g3">0</score>
+			<score id="score_p1m4">0</score>
+			<score id="score_p1g4">0</score>
+			<score id="score_p1m5">0</score>
+			<score id="score_p1g5">0</score>
+			<score id="score_p1vp">0</score>
+			
+			<score id="score_p2m1">0</score>
+			<score id="score_p2g1">0</score>
+			<score id="score_p2m2">0</score>
+			<score id="score_p2g2">0</score>
+			<score id="score_p2m3">0</score>
+			<score id="score_p2g3">0</score>
+			<score id="score_p2m4">0</score>
+			<score id="score_p2g4">0</score>
+			<score id="score_p2m5">0</score>
+			<score id="score_p2g5">0</score>
+			<score id="score_p2vp">0</score>
+			
+			<score id="score_p3m1">0</score>
+			<score id="score_p3g1">0</score>
+			<score id="score_p3m2">0</score>
+			<score id="score_p3g2">0</score>
+			<score id="score_p3m3">0</score>
+			<score id="score_p3g3">0</score>
+			<score id="score_p3m4">0</score>
+			<score id="score_p3g4">0</score>
+			<score id="score_p3m5">0</score>
+			<score id="score_p3g5">0</score>
+			<score id="score_p3vp">0</score>
+			
+			<score id="score_p4m1">0</score>
+			<score id="score_p4g1">0</score>
+			<score id="score_p4m2">0</score>
+			<score id="score_p4g2">0</score>
+			<score id="score_p4m3">0</score>
+			<score id="score_p4g3">0</score>
+			<score id="score_p4m4">0</score>
+			<score id="score_p4g4">0</score>
+			<score id="score_p4m5">0</score>
+			<score id="score_p4g5">0</score>
+			<score id="score_p4vp">0</score>
+		</div>
+	</div>
+	
+	<!-- token pool -->
+	<div>
+		<!-- tokens pool -->
+		<img src="img/gem_chocolate.png" id="pool_gem1" onclick="drawToken(0)" />
+		<img src="img/gem_ruby.png" id="pool_gem2" onclick="drawToken(1)" />
+		<img src="img/gem_emerald.png" id="pool_gem3" onclick="drawToken(2)" />
+		<img src="img/gem_sapphire.png" id="pool_gem4" onclick="drawToken(3)" />
+		<img src="img/gem_diamond.png" id="pool_gem5" onclick="drawToken(4)" />
+		
+		<!-- tokens remaining -->
+		<num id="tokens_left_chocolate">5</num>
+		<num id="tokens_left_ruby">5</num>
+		<num id="tokens_left_emerald">5</num>
+		<num id="tokens_left_sapphire">5</num>
+		<num id="tokens_left_diamond">5</num>
+	</div>
+	
+	<!-- mine cards -->
+	<div>
+		<div id="deck_tier1">
+			<special_mine class="sp_f3 sp_s0"></special_mine>
+			<card_cost_qty class="sp_f3 sp_s0 special_qty">4</card_cost_qty>
+			<special_mine class="sp_f4 sp_s1"></special_mine>
+			<card_cost_qty class="sp_f4 sp_s1 special_qty">4</card_cost_qty>
+			<card_vp id="special_1_vp">3</card_vp>
+		</div>
+		<div id="deck_tier2">
+			<special_mine class="sp_f0 sp_s0"></special_mine>
+			<card_cost_qty class="sp_f0 sp_s0 special_qty">3</card_cost_qty>
+			<special_mine class="sp_f4 sp_s1"></special_mine>
+			<card_cost_qty class="sp_f4 sp_s1 special_qty">3</card_cost_qty>
+			<special_mine class="sp_f2 sp_s2"></special_mine>
+			<card_cost_qty class="sp_f2 sp_s2 special_qty">3</card_cost_qty>
+			<card_vp id="special_2_vp">3</card_vp>
+		</div>
+		<div id="deck_tier3">
+			<special_mine class="sp_f1 sp_s0"></special_mine>
+			<card_cost_qty class="sp_f1 sp_s0 special_qty">3</card_cost_qty>
+			<special_mine class="sp_f2 sp_s1"></special_mine>
+			<card_cost_qty class="sp_f2 sp_s1 special_qty">3</card_cost_qty>
+			<special_mine class="sp_f3 sp_s2"></special_mine>
+			<card_cost_qty class="sp_f3 sp_s2 special_qty">3</card_cost_qty>
+			<card_vp id="special_3_vp">3</card_vp>
+		</div>
+		<tiertext class="tierx1">tier 1</tiertext>
+		<tiertext class="tierx2">tier 2</tiertext>
+		<tiertext class="tierx3">tier 3</tiertext>
+		
+		<!-- mine card frames -->
+		<div>
+			<!-- top row -->
+			<cardbg id="t3s1b" class="slot1 tier3" onclick="drawcard(3,1)"></cardbg>
+			<cardbg id="t3s2b" class="slot2 tier3" onclick="drawcard(3,2)"></cardbg>
+			<cardbg id="t3s3b" class="slot3 tier3" onclick="drawcard(3,3)"></cardbg>
+			<cardbg id="t3s4b" class="slot4 tier3" onclick="drawcard(3,4)"></cardbg>
+			
+			<!-- middle row -->
+			<cardbg id="t2s1b" class="slot1 tier2" onclick="drawcard(2,1)"></cardbg>
+			<cardbg id="t2s2b" class="slot2 tier2" onclick="drawcard(2,2)"></cardbg>
+			<cardbg id="t2s3b" class="slot3 tier2" onclick="drawcard(2,3)"></cardbg>
+			<cardbg id="t2s4b" class="slot4 tier2" onclick="drawcard(2,4)"></cardbg>
+			
+			<!-- bottom row -->
+			<cardbg id="t1s1b" class="slot1 tier1" onclick="drawcard(1,1)"></cardbg>
+			<cardbg id="t1s2b" class="slot2 tier1" onclick="drawcard(1,2)"></cardbg>
+			<cardbg id="t1s3b" class="slot3 tier1" onclick="drawcard(1,3)"></cardbg>
+			<cardbg id="t1s4b" class="slot4 tier1" onclick="drawcard(1,4)"></cardbg>
+		</div>
+		
+		<!-- mine cards -->
+		<div>
+			<!-- top row -->
+			<card id="t3s1" class="slot1c tier3c" onclick="drawcard(3,1)">
+				<card_cost class="mc_f0 mc_s0"></card_cost>
+				<card_cost_qty class="mc_f0 mc_s0">1</card_cost_qty>
+				<card_cost class="mc_f1 mc_s1"></card_cost>
+				<card_cost_qty class="mc_f1 mc_s1">2</card_cost_qty>
+				<card_cost class="mc_f3 mc_s2"></card_cost>
+				<card_cost_qty class="mc_f3 mc_s2">1</card_cost_qty>
+			</card>
+			<card id="t3s2" class="slot2c tier3c" onclick="drawcard(3,2)">
+				<card_cost class="mc_f2 mc_s0"></card_cost>
+				<card_cost_qty class="mc_f2 mc_s0">2</card_cost_qty>
+				<card_cost class="mc_f4 mc_s1"></card_cost>
+				<card_cost_qty class="mc_f4 mc_s1">2</card_cost_qty>
+			</card>
+			<card id="t3s3" class="slot3c tier3c" onclick="drawcard(3,3)"></card>
+			<card id="t3s4" class="slot4c tier3c" onclick="drawcard(3,4)"></card>
+			
+			<!-- middle row -->
+			<card id="t2s1" class="slot1c tier2c" onclick="drawcard(2,1)"></card>
+			<card id="t2s2" class="slot2c tier2c" onclick="drawcard(2,2)"></card>
+			<card id="t2s3" class="slot3c tier2c" onclick="drawcard(2,3)"></card>
+			<card id="t2s4" class="slot4c tier2c" onclick="drawcard(2,4)"></card>
+			
+			<!-- bottom row -->
+			<card id="t1s1" class="slot1c tier1c" onclick="drawcard(1,1)"></card>
+			<card id="t1s2" class="slot2c tier1c" onclick="drawcard(1,2)"></card>
+			<card id="t1s3" class="slot3c tier1c" onclick="drawcard(1,3)"></card>
+			<card id="t1s4" class="slot4c tier1c" onclick="drawcard(1,4)"></card>
+		</div>
+		
+		<!-- card's mine icon (upper right of each card) -->
+		<div>
+			<!-- top row -->
+			<card_mine_icon id="t3s1mi" class="mi_s1 mi_t3 mi_f0" onclick="drawcard(3,1)"></card_mine_icon>
+			<card_mine_icon id="t3s2mi" class="mi_s2 mi_t3 mi_f0" onclick="drawcard(3,2)"></card_mine_icon>
+			<card_mine_icon id="t3s3mi" class="mi_s3 mi_t3 mi_f0" onclick="drawcard(3,3)"></card_mine_icon>
+			<card_mine_icon id="t3s4mi" class="mi_s4 mi_t3 mi_f0" onclick="drawcard(3,4)"></card_mine_icon>
+			
+			<!-- middle row -->
+			<card_mine_icon id="t2s1mi" class="mi_s1 mi_t2 mi_f0" onclick="drawcard(2,1)"></card_mine_icon>
+			<card_mine_icon id="t2s2mi" class="mi_s2 mi_t2 mi_f0" onclick="drawcard(2,2)"></card_mine_icon>
+			<card_mine_icon id="t2s3mi" class="mi_s3 mi_t2 mi_f0" onclick="drawcard(2,3)"></card_mine_icon>
+			<card_mine_icon id="t2s4mi" class="mi_s4 mi_t2 mi_f0" onclick="drawcard(2,4)"></card_mine_icon>
+			
+			<!-- bottom row -->
+			<card_mine_icon id="t1s1mi" class="mi_s1 mi_t1 mi_f0" onclick="drawcard(1,1)"></card_mine_icon>
+			<card_mine_icon id="t1s2mi" class="mi_s2 mi_t1 mi_f0" onclick="drawcard(1,2)"></card_mine_icon>
+			<card_mine_icon id="t1s3mi" class="mi_s3 mi_t1 mi_f0" onclick="drawcard(1,3)"></card_mine_icon>
+			<card_mine_icon id="t1s4mi" class="mi_s4 mi_t1 mi_f0" onclick="drawcard(1,4)"></card_mine_icon>
+		</div>
+	</div>
+	
+	<!--<div id="game_code_display">#0000</div>-->
+		
+	<button id="pass_turn" onclick="passTurn()">PASS TURN</button>
+	
+	<script>init();</script>
+</body>
+</html>
